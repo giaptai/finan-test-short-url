@@ -7,5 +7,5 @@ type URL struct {
 	ShortCode   string    `json:"short_code"`
 	OriginalURL string    `json:"original_url"`
 	Clicks      int64     `json:"clicks"`
-	CreatedAt   time.Time `json:"create_at"`
+	CreatedAt   time.Time `json:"created_at"`
 }
