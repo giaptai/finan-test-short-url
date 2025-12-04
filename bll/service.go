@@ -3,8 +3,8 @@ package bll
 import (
 	"errors"
 	"math/rand"
+	"net"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/giaptai/finan-test-short-url/dao"
@@ -91,7 +91,7 @@ func (s *URLService) ValidateURL(rawURL string) error {
 	u, err := url.Parse(rawURL)
 
 	if err != nil {
-		return errors.New("Invalid URL format")
+		return errors.New("invalid URL format")
 	}
 
 	if u.Scheme != "http" && u.Scheme != "https" {
@@ -102,14 +102,44 @@ func (s *URLService) ValidateURL(rawURL string) error {
 		return errors.New("URL must have a valid host")
 	}
 
-	// Blacklist localhost
-	if strings.Contains(u.Host, "localhost") ||
-		strings.Contains(u.Host, "127.0.0.1") ||
-		strings.Contains(u.Host, "0.0.0.0") {
-		return errors.New("cannot shorten localhost URLs")
+	host := u.Hostname()
+	ips, err := net.LookupIP(host)
+
+	if err != nil {
+		return errors.New("cannot resolve hostname")
+	}
+
+	for _, ip := range ips {
+		if s.isPrivateIP(ip) {
+			return errors.New("cannot shorten localhost URLs")
+		}
 	}
 
 	return nil
+}
+
+// check if IP is private/internal
+func (s *URLService) isPrivateIP(ip net.IP) bool {
+	// loopback (127.0.0.0/8, ::1 - ipv6)
+	if ip.IsLoopback() {
+		return true
+	}
+
+	// Private networks (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
+	if ip.IsPrivate() {
+		return true
+	}
+
+	// Link-local (169.254.0.0/16, fe80::/10)
+	if ip.IsLinkLocalUnicast() {
+		return true
+	}
+
+	// multi cast: 224.0.0.0/4, ff00::/8
+	if ip.IsMulticast() {
+		return true
+	}
+	return false
 }
 
 // generate unique short code
