@@ -42,7 +42,7 @@ func (s *URLService) CreateShortURL(originalURL string) (*model.URL, error) {
 		return nil, err
 	}
 
-	// create url object
+	// 3. create url object
 	url := &model.URL{
 		ShortCode:   shortCode,
 		OriginalURL: originalURL,
@@ -50,7 +50,7 @@ func (s *URLService) CreateShortURL(originalURL string) (*model.URL, error) {
 		CreatedAt:   time.Now(),
 	}
 
-	// store in database
+	//4. store in database
 	if err := s.repo.Add(url); err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (s *URLService) ListURLs(limit, offset int) ([]*model.URL, error) {
 	return s.repo.GetAll(limit, offset)
 }
 
-// validate url
+// validate url - Security (SSRF Protection)
 func (s *URLService) ValidateURL(rawURL string) error {
 	u, err := url.Parse(rawURL)
 
@@ -111,14 +111,14 @@ func (s *URLService) ValidateURL(rawURL string) error {
 
 	for _, ip := range ips {
 		if s.isPrivateIP(ip) {
-			return errors.New("cannot shorten localhost URLs")
+			return errors.New("cannot shorten private/internal URLs")
 		}
 	}
 
 	return nil
 }
 
-// check if IP is private/internal
+// check if IP is private/internal - Validation
 func (s *URLService) isPrivateIP(ip net.IP) bool {
 	// loopback (127.0.0.0/8, ::1 - ipv6)
 	if ip.IsLoopback() {

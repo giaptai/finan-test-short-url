@@ -23,6 +23,7 @@ func NewURLHandler(service *bll.URLService, baseURL string) *URLHandler {
 	}
 }
 
+// Validation
 func (h *URLHandler) CreateShortURL(c *gin.Context) {
 	var req CreateURLRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

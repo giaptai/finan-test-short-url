@@ -2,6 +2,7 @@ package dao
 
 import (
 	"database/sql"
+
 	"github.com/giaptai/finan-test-short-url/model"
 )
 
@@ -74,7 +75,7 @@ func (r *URLRespository) Add(url *model.URL) error {
 	return err
 }
 
-// upd one
+// upd one - Atomic operation - avoid race condition
 func (r *URLRespository) IncrementClicks(shortCode string) error {
 	query := `UPDATE url SET clicks = clicks + 1 WHERE short_code = $1`
 	_, err := r.db.Exec(query, shortCode)
