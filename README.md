@@ -1,7 +1,7 @@
 ## Mục lục
 1. [Bài toán](#bài-toán)
 2. [Cách chạy](#cách-chạy)
-3. [Thiết kế & Quyết định kỹ thuật](#thiết-kế--quyết-định-kỹ-thuật)
+3. [Thiết kế, Quyết định kỹ thuật & Trade-offs](#thiết-kế-quyết-định-kỹ-thuật--trade-offs)
 4. [Trade-offs](#trade-offs)
 5. [Challenges, Solutions & Learns](#challenges-solutions--learns)
 6. [Performance & Scalability](#performance--scalability)
@@ -57,23 +57,34 @@ go run main.go
 
 
 
-## Thiết kế & Quyết định kỹ thuật
+## Thiết kế, Quyết định kỹ thuật & Trade-offs
 
 **Kiến trúc:**
 > Handle (controller) → BLL_Business logic layer → _DAO_Data access layer → PostgreSQL.
 
 **Lý do:**
-- Mỗi tầng mỗi trách nhiệm riêng, 
+- Mỗi tầng mỗi trách nhiệm riêng.
+    - Handler: Xử lý HTTP requests/responses
+    - Service: Business logic, validation, SSRF protection
+    - DAO: Database operations (CRUD)
 - Dễ test, dễ thay đổi loại database mà không anh hưởng business logic
 
 **Database: PostgreSQL**
-- Em thấy các công ty thường chọn PostgreSQL.
-- PostgreSQL đủ nhanh, hỗ trợ truy vấn số lượng lớn.
+| Database | Ưu điểm | Nhược điểm | Khi nào dùng |
+|----------|---------|------------|--------------|
+| Redis | Siêu nhanh | Data dễ mất, RAM đắt | Caching layer, session storage |
+| MongoDB | Flexible schema | Overkill | Complex schemas |
+| **PostgreSQL** | ACID, persistent, queries | Chậm hơn Redis | Long-term storage, Complex schemas |
 
-**API: REST**
-- Vì REST phổ biến, được hỗ trợ rộng rãi và yêu cầu bài test phù hợp để sử dụng
-- GraphQL dành cho ứng dụng phức tạp mạnh khi client cần dữ liệu linh hoạt, tránh over-fetching/under-fetching.
-- gRPC cho hệ thống microservices, giao tiếp tốc độ cao, real-time hoặc nội bộ.
+**Table Schema & Index Strategy:** Schema trong [schema.sql](schema\schema.sql) 
+
+**API Design: REST**
+| Công nghệ | Đặc điểm chính | Trường hợp sử dụng |
+|-----------|----------------|--------------------|
+| **REST**  | Phổ biến, được hỗ trợ rộng rãi, dễ test | API phổ biến, yêu cầu tương thích rộng |
+| GraphQL | Linh hoạt, tránh over-fetching/under-fetching | Ứng dụng phức tạp, client cần dữ liệu tùy biến |
+| gRPC  | Tốc độ cao, hỗ trợ real-time, tối ưu microservices | Giao tiếp nội bộ, hệ thống microservices |
+
 
 **Thuật toán Base62**
 
@@ -92,13 +103,12 @@ go run main.go
 | **Base62 Random** | `/QgCHdO` | Ngắn (6 chars), khó đoán, dễ đọc | Có thể collision |
 
 
-
 ## Challenges, Solutions & Learns
 ### Xử lỗi **FATAL:  sorry, too many clients already**
-- Vấn đề
+- Vấn đề: Em nhận thấy khi có nhiều kết nối sẽ bị lỗi *too many clients already*
 - Giải pháp
 - Học được
-    > Em nhận thấy khi có nhiều kết nối sẽ bị lỗi *too many clients already*, thêm nữa mỗi request thì Gin sẽ tạo 1 goroutines, tuy nhiên hiện tại chỉ có 1 connection tới database dẫn tới nghẽn cổ chai vì thế dựa vào dự án [BankSiM](https://github.com/giaptai/BankSim), em đã dùng:
+    > mỗi request thì Gin sẽ tạo 1 goroutines, tuy nhiên hiện tại chỉ có 1 connection tới database dẫn tới nghẽn cổ chai vì thế dựa vào dự án [BankSiM](https://github.com/giaptai/BankSim), em đã dùng:
 
  - Trong [postgres.go](dao/database/postgres.go) max connection là 100 => cho phép tạo 100 kết nối dồng thời tới postgres
 
