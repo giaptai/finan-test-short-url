@@ -2,10 +2,9 @@
 1. [Bài toán](#bài-toán)
 2. [Cách chạy](#cách-chạy)
 3. [Thiết kế, Quyết định kỹ thuật & Trade-offs](#thiết-kế-quyết-định-kỹ-thuật--trade-offs)
-4. [Trade-offs](#trade-offs)
-5. [Challenges, Solutions & Learns](#challenges-solutions--learns)
-6. [Performance & Scalability](#performance--scalability)
-7. [Limitations & Improvements](#limitations--improvements)
+4. [Challenges, Solutions & Learns](#challenges-solutions--learns)
+5. [Performance & Scalability](#performance--scalability)
+6. [Limitations & Improvements](#limitations--improvements)
 ---
 
 ## Bài toán
@@ -104,14 +103,24 @@ go run main.go
 
 
 ## Challenges, Solutions & Learns
-### Xử lỗi **FATAL:  sorry, too many clients already**
+1. **FATAL:  sorry, too many clients already**
 - Vấn đề: Em nhận thấy khi có nhiều kết nối sẽ bị lỗi *too many clients already*
-- Giải pháp
-- Học được
-    > mỗi request thì Gin sẽ tạo 1 goroutines, tuy nhiên hiện tại chỉ có 1 connection tới database dẫn tới nghẽn cổ chai vì thế dựa vào dự án [BankSiM](https://github.com/giaptai/BankSim), em đã dùng:
+- Giải pháp: Chỉnh connection pool 
+- Học được:
+    - Mỗi request thì Gin sẽ tạo 1 goroutines, tuy nhiên hiện tại chỉ có 1 connection tới database dẫn tới nghẽn cổ chai vì thế dựa vào dự án [BankSiM](https://github.com/giaptai/BankSim), em đã dùng:
 
- - Trong [postgres.go](dao/database/postgres.go) max connection là 100 => cho phép tạo 100 kết nối dồng thời tới postgres
+2. **SSRF Security Vulnerability**
+- Vấn đề: Người dùng có thể tạo short link từ localhost, internal network - nói chung là dải địa chỉ tùy ý
+- Giải pháp: chặn lại bằng hàm isPrivateIP kiểm tra hostname trước khi tạo trong [service.go](bll/service.go)
+- Học được: SSRF là gì? Luôn valid nội dung trước khi xử lý, Cách phòng tránh bằng Golang
 
+3. **Async Click Tracking Trade-off**
+- Vấn đề: khi user click vào short URL thì lúc này có 2 hoạt động: 1 tăng clicks trong database và 2 redirect tới link gốc
+- Giải pháp: dùng từ khóa go cho việc tăng biến đếm click và redirect ngay
+- Học được: asynchronous và PostgreSQL có cơ chế khóa hàng
+
+## Performance & Scalability
+> Performance: Nếu có 1 triệu links thì query ra sao? Có cần index không?
 
 ## Limitations & Improvements
 - Thuật toán tạo link rút gọn vẫn sẽ có trùng lặp
