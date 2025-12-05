@@ -3,10 +3,12 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
+	"time"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func Connection() (*sql.DB, error) {
@@ -27,6 +29,9 @@ func Connection() (*sql.DB, error) {
 	)
 
 	db, err := sql.Open("postgres", dsn)
+	db.SetMaxOpenConns(100)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxIdleTime(60 * time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}

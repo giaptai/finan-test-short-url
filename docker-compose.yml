@@ -6,6 +6,7 @@ services:
       POSTGRES_DB: urlshortener
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
+    command: [ "postgres", "-c", "max_connections=103" ]
     ports:
       - "5433:5432"
     volumes:
