@@ -75,6 +75,14 @@ go run main.go
 | MongoDB | Flexible schema | Overkill | Complex schemas |
 | **PostgreSQL** | ACID, persistent, queries | Chậm hơn Redis | Long-term storage, Complex schemas |
 
+**Quyết định**: Em chọn **PostgreSQL** vì:
+- URLs cần lưu lâu dài
+- PostgreSQL cũng hỗ trợ tốt truy vấn cơ bản và cả phức tạp
+- Cost-effective: Disk rẻ hơn RAM
+- Performance đủ nhanh
+
+**Trade-off chấp nhận**: Chậm hơn Redis (~1ms vs ~0.1ms) để đổi lấy reliability và cost savings.
+
 **Table Schema & Index Strategy:** Schema trong [schema.sql](schema\schema.sql) 
 
 **API Design: REST**
@@ -84,6 +92,12 @@ go run main.go
 | GraphQL | Linh hoạt, tránh over-fetching/under-fetching | Ứng dụng phức tạp, client cần dữ liệu tùy biến |
 | gRPC  | Tốc độ cao, hỗ trợ real-time, tối ưu microservices | Giao tiếp nội bộ, hệ thống microservices |
 
+**Quyết định**: Em chọn **REST** vì:
+- Use case đơn giản (CRUD operations)
+- REST phổ biến, được hỗ trợ rộng rãi, dễ test
+- Phù hợp với yêu cầu đề bài
+
+**Trade-off chấp nhận**: Over-fetching data (trả về toàn bộ object) là acceptable cho use case này.
 
 **Thuật toán Base62**
 
@@ -101,6 +115,12 @@ go run main.go
 | Hash (MD5) | `/5d41402abc...` | Cố định | Dài, có thể collision |
 | **Base62 Random** | `/QgCHdO` | Ngắn (6 chars), khó đoán, dễ đọc | Có thể collision |
 
+**Quyết định**: Em chọn **Base62 Random** vì:
+- Ngắn nhất: 6 chars vs 36 chars (UUID) vs 10+ chars (Auto-increment với 1M records)
+- Security: Unpredictable (user không đoán được URLs khác)
+- UX: Human-readable (không có ký tự đặc biệt), dễ share
+
+**Trade-off chấp nhận**: Collision risk < 0.002% với < 1M URLs
 
 ## Challenges, Solutions & Learns
 1. **FATAL:  sorry, too many clients already**
@@ -122,8 +142,9 @@ go run main.go
 ## Performance & Scalability
 > Performance: Nếu có 1 triệu links thì query ra sao? Có cần index không?
 
+
 ## Limitations & Improvements
 - Thuật toán tạo link rút gọn vẫn sẽ có trùng lặp
 - Do ngôn ngữ lập trình chính là Java nên em có sử dụng AI với tài liệu để giải quyết bài test
 - Chưa deploy ứng dụng: tuy nhiên đã có luồng để chạy
-    - Tạo Dockerfile -> Build ứng dụng thành image -> đẩy lên docker hub -> dùng render pull image đó về -> chạy ứng dụng    
+    - Tạo Dockerfile → Build ứng dụng thành image → đẩy lên docker hub → dùng render pull image đó về → chạy ứng dụng    
