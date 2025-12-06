@@ -83,7 +83,7 @@ go run main.go
 
 **Trade-off**: Chậm hơn Redis (~1ms vs ~0.1ms) để đổi lấy reliability và cost savings.
 
-**Table Schema & Index Strategy:** Schema trong [schema.sql](schema\schema.sql) 
+**Table Schema & Index Strategy:** Schema trong [schema.sql](schema/schema.sql) 
 
 **API Design: REST**
 | Công nghệ | Đặc điểm chính | Trường hợp sử dụng |
@@ -162,7 +162,7 @@ go run main.go
 ## Performance & Scalability
 > Performance: Nếu có 1 triệu links thì query ra sao? Có cần index không?
 
-1. Nếu query tìm một url cụ thể trong 1M links thì trong [schema.sql](schema\schema.sql) có có cột short_code là unique - một index đặc biệt rồi
+1. Nếu query tìm một url cụ thể trong 1M links thì trong [schema.sql](schema/schema.sql) có có cột short_code là unique - một index đặc biệt rồi
 
 ```sql
 
