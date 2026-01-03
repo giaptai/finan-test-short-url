@@ -1,12 +1,14 @@
 package main
 
 import (
+	"log"
+
 	"github.com/giaptai/finan-test-short-url/bll"
 	"github.com/giaptai/finan-test-short-url/dao"
 	"github.com/giaptai/finan-test-short-url/dao/database"
 	"github.com/giaptai/finan-test-short-url/handler"
+	"github.com/giaptai/finan-test-short-url/middleware"
 	"github.com/gin-gonic/gin"
-	"log"
 )
 
 func main() {
@@ -22,6 +24,9 @@ func main() {
 
 	// create router
 	r := gin.Default()
+	r.Use(middleware.CORS())
+	r.Use(middleware.RateLimit())
+	
 	r.POST("/api/urls", handler.CreateShortURL)
 	r.GET("/api/urls/:shortCode", handler.GetURLInfo)
 	r.GET("/api/urls", handler.ListURLs)
